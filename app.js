@@ -41,22 +41,32 @@ io.on('disconnect', (ctx, data) => {
     console.log(`${socket.id} disconnected`)
     if (socket.roomKey) {
         console.log(`Close room: ${rooms[socket.roomKey].title}`)
+        socket.broadcast.to(socket.roomKey).emit('close_room')
         delete rooms[socket.roomKey]
     }
 })
 
 io.on('create_room', (ctx, data) => {
     let {socket: {socket}} = ctx
-    console.log(socket.join)
     console.log(`Create room: ${data.title}`)
     var roomKey = uuid.v4()
+    data.key = roomKey
     rooms[roomKey] = data
     socket.roomKey = roomKey
     socket.join(roomKey)
+    console.log(`Room ready: ${data.key}`)
+    socket.emit('room_ready', data)
+})
+
+io.on('join_room', (ctx, data) => {
+    let {socket: {socket}} = ctx
+    var room = rooms[data]
+    console.log(`Join room: ${room.title}`)
+    socket.join(room.key)
 })
 
 router.get('/rooms', (ctx, next) => {
-    ctx.body = rooms
+    ctx.body = Object.values(rooms)
 })
 
 app.listen(3000, () => console.log("Start on http://localhost:3000"))
