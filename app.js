@@ -11,6 +11,7 @@ import uuid from 'node-uuid'
 
 import router from "./routes"
 
+const PORT = 3000
 const app = new Koa()
 const io = new IO()
 
@@ -30,7 +31,7 @@ io.use(async (ctx, next) => {
     await next()
 })
 
-var rooms = {}
+let rooms = {}
 
 io.on('connection', (ctx, data) => {
     console.log(`${ctx.socket.id} connected`)
@@ -49,8 +50,9 @@ io.on('disconnect', (ctx, data) => {
 io.on('create_room', (ctx, data) => {
     let {socket: {socket}} = ctx
     console.log(`Create room: ${data.title}`)
-    var roomKey = uuid.v4()
+    let roomKey = uuid.v4()
     data.key = roomKey
+    data.pushUrl = `rtmp://192.168.2.217/live/${roomKey}`
     rooms[roomKey] = data
     socket.roomKey = roomKey
     socket.join(roomKey)
@@ -60,7 +62,7 @@ io.on('create_room', (ctx, data) => {
 
 io.on('join_room', (ctx, data) => {
     let {socket: {socket}} = ctx
-    var room = rooms[data]
+    let room = rooms[data]
     console.log(`Join room: ${room.title}`)
     socket.join(room.key)
 })
@@ -69,6 +71,6 @@ router.get('/rooms', (ctx, next) => {
     ctx.body = Object.values(rooms)
 })
 
-app.listen(3000, () => console.log("Start on http://localhost:3000"))
+app.listen(PORT, () => console.log(`Start on http://localhost:${PORT}`))
 
 export default app
