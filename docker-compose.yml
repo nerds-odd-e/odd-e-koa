@@ -4,7 +4,6 @@ services:
     build: .
     ports:
      - "3000"
-    command: "node_modules/.bin/nodemon app.js"
   nginx:
     build: ./nginx
     ports:

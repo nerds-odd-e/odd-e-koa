@@ -8,7 +8,8 @@ RUN npm config set registry https://registry.npm.taobao.org -g
 WORKDIR /var/workspace
 COPY . /var/workspace
 RUN yarn install
+RUN yarn global add nodemon
 
 EXPOSE 3000
-#CMD ["node_modules/.bin/nodemon",  "app.js"]
+CMD ["nodemon",  "/var/workspace/app.js"]
 
