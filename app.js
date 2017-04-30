@@ -12,6 +12,7 @@ import uuid from 'node-uuid'
 import router from "./routes"
 
 const PORT = 3000
+const RTMP_URL = 'rtmp://218.244.133.135/live/'
 const app = new Koa()
 const io = new IO()
 
@@ -52,7 +53,7 @@ io.on('create_room', (ctx, data) => {
     console.log(`Create room: ${data.title}`)
     let roomKey = uuid.v4()
     data.key = roomKey
-    data.pushUrl = `rtmp://192.168.2.217/live/${roomKey}`
+    data.url = `${RTMP_URL}${roomKey}`
     rooms[roomKey] = data
     socket.roomKey = roomKey
     socket.join(roomKey)
