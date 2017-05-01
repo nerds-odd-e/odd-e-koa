@@ -6,6 +6,8 @@ services:
      - "3000"
   nginx:
     build: ./nginx
+    volumns:
+      - /var/log/nginx:/var/log/nginx:rw
     ports:
       - "80:80"
     links:

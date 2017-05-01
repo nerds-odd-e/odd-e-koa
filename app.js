@@ -5,9 +5,10 @@ import cors from 'kcors'
 import bodyParser from 'koa-bodyparser'
 import onError from "koa-onerror"
 import json from "koa-json"
-import logger from "koa-logger"
+import koaLogger from "koa-logger"
 import IO from 'koa-socket'
 import uuid from 'node-uuid'
+import log4js from 'log4js'
 
 import router from "./routes"
 
@@ -15,11 +16,12 @@ const PORT = 3000
 const RTMP_URL = 'rtmp://218.244.133.135/live/'
 const app = new Koa()
 const io = new IO()
+const logger = log4js.getLogger()
 
 app.use(convert(cors()))
 app.use(bodyParser())
 app.use(json())
-app.use(logger())
+app.use(koaLogger())
 
 app.use(router.allowedMethods())
 app.use(router.routes())
@@ -28,21 +30,21 @@ onError(app)
 io.attach(app)
 
 io.use(async (ctx, next) => {
-    console.log(`From ${ctx.socket.id} - ${ctx.event}`)
+    logger.info(`From ${ctx.socket.id} - ${ctx.event}`)
     await next()
 })
 
 let rooms = {}
 
 io.on('connection', (ctx, data) => {
-    console.log(`${ctx.socket.id} connected`)
+    logger.info(`${ctx.socket.id} connected`)
 })
 
 io.on('disconnect', (ctx, data) => {
     let {socket: {socket}} = ctx
-    console.log(`${socket.id} disconnected`)
+    logger.info(`${socket.id} disconnected`)
     if (socket.roomKey) {
-        console.log(`Close room: ${rooms[socket.roomKey].title}`)
+        logger.info(`Close room: ${rooms[socket.roomKey].title}`)
         socket.broadcast.to(socket.roomKey).emit('close_room')
         delete rooms[socket.roomKey]
     }
@@ -50,21 +52,21 @@ io.on('disconnect', (ctx, data) => {
 
 io.on('create_room', (ctx, data) => {
     let {socket: {socket}} = ctx
-    console.log(`Create room: ${data.title}`)
+    logger.info(`Create room: ${data.title}`)
     let roomKey = uuid.v4()
     data.key = roomKey
     data.url = `${RTMP_URL}${roomKey}`
     rooms[roomKey] = data
     socket.roomKey = roomKey
     socket.join(roomKey)
-    console.log(`Room ready: ${data.key}`)
+    logger.info(`Room ready: ${data.key}`)
     socket.emit('room_ready', data)
 })
 
 io.on('join_room', (ctx, data) => {
     let {socket: {socket}} = ctx
     let room = rooms[data]
-    console.log(`Join room: ${room.title}`)
+    logger.info(`Join room: ${room.title}`)
     socket.join(room.key)
 })
 
@@ -72,6 +74,6 @@ router.get('/rooms', (ctx, next) => {
     ctx.body = Object.values(rooms)
 })
 
-app.listen(PORT, () => console.log(`Start on http://localhost:${PORT}`))
+app.listen(PORT, () => logger.info(`Start on http://localhost:${PORT}`))
 
 export default app
