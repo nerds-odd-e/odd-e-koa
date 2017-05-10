@@ -6,7 +6,7 @@ services:
      - "3000"
   nginx:
     build: ./nginx
-    volumns:
+    volumes:
       - /var/log/nginx:/var/log/nginx:rw
     ports:
       - "80:80"
@@ -14,6 +14,8 @@ services:
       - koa
   rtmp:
     image: jasonrivers/nginx-rtmp
+    volumes:
+      - /var/log/rtmp:/opt/nginx/logs:rw
     ports:
       - "8080:8080"
       - "1935:1935"

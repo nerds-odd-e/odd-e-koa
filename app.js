@@ -13,7 +13,7 @@ import log4js from 'log4js'
 import router from "./routes"
 
 const PORT = 3000
-const RTMP_URL = 'rtmp://218.244.133.135/live/'
+const RTMP_URL = 'rtmp://ttq.iagile.me/live/'
 const app = new Koa()
 const io = new IO()
 const logger = log4js.getLogger()
@@ -59,7 +59,7 @@ io.on('create_room', (ctx, data) => {
     rooms[roomKey] = data
     socket.roomKey = roomKey
     socket.join(roomKey)
-    logger.info(`Room ready: ${data.key}`)
+    logger.info(`Room ready: ${data.url}`)
     socket.emit('room_ready', data)
 })
 
